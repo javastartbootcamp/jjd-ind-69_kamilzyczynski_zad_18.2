@@ -60,7 +60,7 @@ public class PriceCalculator {
         for (Coupon coupon : coupons) {
             for (Product product : products) {
                 if (product.getCategory().equals(coupon.getCategory())) {
-                    discount += product.getPrice() * (1 - (coupon.getDiscountValueInPercents() / 100.0));
+                    discount += product.getPrice() * convertDiscountToDecimal(coupon);
                 }
             }
             if (discount > minimum) {
