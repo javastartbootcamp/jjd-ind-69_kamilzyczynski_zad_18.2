@@ -61,6 +61,8 @@ public class PriceCalculator {
             for (Product product : products) {
                 if (product.getCategory().equals(coupon.getCategory())) {
                     discount += product.getPrice() * convertDiscountToDecimal(coupon);
+                } else {
+                    discount += product.getPrice() * convertDiscountToDecimal(coupon);
                 }
             }
             if (discount > minimum) {
