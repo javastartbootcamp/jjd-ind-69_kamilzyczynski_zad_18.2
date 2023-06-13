@@ -7,21 +7,22 @@ import java.util.List;
 public class PriceCalculator {
 
     public double calculatePrice(List<Product> products, List<Coupon> coupons) {
-        double sum;
+        double sum = 0;
         if (products == null) {
             return 0;
         }
         if (coupons == null) {
             sum = calculateSumForProducts(products, null);
-        } else if (coupons.size() == 1) {
-            Coupon coupon = coupons.get(0);
-            sum = calculateSumForProducts(products, coupon);
-            if (coupon.getCategory() == null) {
-                sum *= convertDiscountToDecimal(coupon);
-            }
         } else {
-            Coupon biggestDiscount = getBiggestDiscount(products, coupons);
-            sum = calculateSumForProducts(products, biggestDiscount);
+            for (Coupon coupon : coupons) {
+                sum = calculateSumForProducts(products, coupon);
+                if (coupon.getCategory() == null) {
+                    sum *= convertDiscountToDecimal(coupon);
+                } else {
+                    Coupon biggestDiscount = getBiggestDiscount(products, coupons);
+                    sum = calculateSumForProducts(products, biggestDiscount);
+                }
+            }
         }
         return getRoundedValue(sum);
     }
@@ -55,15 +56,12 @@ public class PriceCalculator {
 
     private static Coupon getBiggestDiscount(List<Product> products, List<Coupon> coupons) {
         Coupon result = null;
-        double minimum = 0;
-        double discount = 0;
         for (Coupon coupon : coupons) {
+            double minimum = 0;
+            double discount = 0;
+
             for (Product product : products) {
-                if (product.getCategory().equals(coupon.getCategory())) {
-                    discount += product.getPrice() * convertDiscountToDecimal(coupon);
-                } else {
-                    discount += product.getPrice() * convertDiscountToDecimal(coupon);
-                }
+                discount += product.getPrice() * convertDiscountToDecimal(coupon);
             }
             if (discount > minimum) {
                 minimum = discount;
