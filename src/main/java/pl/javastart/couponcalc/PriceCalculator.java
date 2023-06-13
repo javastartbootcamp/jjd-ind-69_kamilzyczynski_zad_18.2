@@ -1,13 +1,74 @@
 package pl.javastart.couponcalc;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 public class PriceCalculator {
 
     public double calculatePrice(List<Product> products, List<Coupon> coupons) {
-        // TODO
+        double sum = 0;
+        if (products == null) {
+            return 0;
+        }
+        if (coupons == null) {
+            sum = calculateSumForProducts(products, null);
+        } else {
+            for (Coupon coupon : coupons) {
+                sum = calculateSumForProducts(products, coupon);
+                if (coupon.getCategory() == null) {
+                    sum *= convertDiscountToDecimal(coupon);
+                } else {
+                    Coupon biggestDiscount = getBiggestDiscount(products, coupons);
+                    sum = calculateSumForProducts(products, biggestDiscount);
+                }
+            }
+        }
+        return getRoundedValue(sum);
+    }
 
-        return 0;
+    private static double getRoundedValue(double sum) {
+        BigDecimal roundedValue = BigDecimal.valueOf(sum)
+                .setScale(2, RoundingMode.HALF_UP);
+        return roundedValue.doubleValue();
+    }
+
+    private static double convertDiscountToDecimal(Coupon coupon) {
+        return 1 - (coupon.getDiscountValueInPercents() / 100.0);
+    }
+
+    private static double calculateSumForProducts(List<Product> products, Coupon coupon) {
+        double sum = 0;
+
+        for (Product product : products) {
+            if (coupon == null || coupon.getCategory() == null) {
+                sum += product.getPrice();
+            } else {
+                if (product.getCategory().equals(coupon.getCategory())) {
+                    sum += product.getPrice() * convertDiscountToDecimal(coupon);
+                } else {
+                    sum += product.getPrice();
+                }
+            }
+        }
+        return sum;
+    }
+
+    private static Coupon getBiggestDiscount(List<Product> products, List<Coupon> coupons) {
+        Coupon result = null;
+        for (Coupon coupon : coupons) {
+            double minimum = 0;
+            double discount = 0;
+
+            for (Product product : products) {
+                discount += product.getPrice() * convertDiscountToDecimal(coupon);
+            }
+            if (discount > minimum) {
+                minimum = discount;
+                result = coupon;
+            }
+        }
+        return result;
     }
 
 }
